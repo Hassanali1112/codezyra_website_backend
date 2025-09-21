@@ -5,8 +5,16 @@ import { asyncHandler } from "../utils/asyncHandler.util.js";
 import { ApiError } from "../utils/ApiError.util.js";
 import { uploadToCloudinary } from "../utils/cloudinaryConfig.util.js";
 import fs from "fs";
+import { User } from "../models/user.model.js";
 
 export const addPortfolioHandler = asyncHandler(async (req, res) => {
+
+  const user = await User.findById(req.user._id)
+
+  if( user.role.toLowerCase() !== "admin"){
+    throw new ApiError(403, "Unauthorized to perform this action")
+  }
+
   const { tag, link } = req.body;
 
   if ([tag, link].some((fields) => fields.trim() === "")) {
@@ -42,7 +50,11 @@ export const addPortfolioHandler = asyncHandler(async (req, res) => {
 });
 
 export const deletePortfolioHandler = asyncHandler(async (req, res) => {
-  console.log("delete portfolio");
+   const user = await User.findById(req.user._id);
+
+   if (user.role.toLowerCase() !== "admin") {
+     throw new ApiError(403, "Unauthorized to perform this action");
+   }
   const { _id } = req.body;
 
   if (!_id) {

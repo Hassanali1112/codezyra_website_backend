@@ -7,6 +7,7 @@ const options = {
   httpOnly: true,
   secure: true,
 };
+
 export const loginHandler = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -36,5 +37,7 @@ export const loginHandler = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .cookie("token", token, options)
-    .json(new ApiResponse(200, user, "logged in successfully", token));
+    .json(
+      new ApiResponse(200, { user, token }, "logged in successfully", token)
+    );
 });

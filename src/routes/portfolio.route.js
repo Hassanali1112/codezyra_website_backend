@@ -4,13 +4,14 @@ import {
   deletePortfolioHandler,
 } from "../controllers/portfolio.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
+import { verifyJwt } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
 router
   .route("/add-portfolio")
-  .post(upload.single("image"), addPortfolioHandler);
+  .post(verifyJwt, upload.single("image"), addPortfolioHandler);
 
-router.route("/delete-portfolio").post(deletePortfolioHandler);
+router.route("/delete-portfolio").post(verifyJwt, deletePortfolioHandler);
 
 export default router;
