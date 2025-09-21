@@ -8,12 +8,18 @@ import dotenv from "dotenv";
 dotenv.config({ path: "./.env" });
 
 const contactUsHandler = asyncHandler(async (req, res) => {
-  const { firsName, lastName, email, message } = req.body;
+  const { firstName, lastName, email, message } = req.body;
 
-  if ([firsName, lastName, email, message].some((field) => field === "")) {
+  if ([firstName, lastName, email, message].some((field) => field === "")) {
     throw new ApiError(401, "All fields are required!!");
   }
-  // nodemailer.createTransport
+
+  const newContactRequest = await Contact.create({
+    firstName,
+    lastName,
+    email,
+    message,
+  });
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465, // or 587
@@ -30,7 +36,7 @@ const contactUsHandler = asyncHandler(async (req, res) => {
     subject: `Contact Message`,
     html: `
         <h3>New Contact Request</h3>
-        <p><b>Name:</b> ${firsName} ${lastName}</p>
+        <p><b>Name:</b> ${firstName} ${lastName}</p>
         <p><b>Email:</b> ${email}</p>
         <p><b>Message:</b></p>
         <p>${message}</p>
