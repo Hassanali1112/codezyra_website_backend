@@ -7,6 +7,7 @@ const PORT = process.env.PORT || 5000;
 
 connect_DB()
   .then((res) => {
+    
     app.listen(PORT, () => {
       console.log(`server is ready at : ${PORT}`);
     });
