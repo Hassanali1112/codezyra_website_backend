@@ -8,9 +8,14 @@ app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 
 
-// routes
+// contact routes
 import contactRouter from "./routes/contact.router.js"
-
 app.use("/api/v1", contactRouter)
+
+// portfolio routes
+import portfolioRouter from "./routes/portfolio.route.js"
+app.use("/api/v1/portfolio", portfolioRouter)
+
+
 
 export { app };
