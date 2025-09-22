@@ -8,11 +8,10 @@ import fs from "fs";
 import { User } from "../models/user.model.js";
 
 export const addPortfolioHandler = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
 
-  const user = await User.findById(req.user._id)
-
-  if( user.role.toLowerCase() !== "admin"){
-    throw new ApiError(403, "Unauthorized to perform this action")
+  if (user.role.toLowerCase() !== "admin") {
+    throw new ApiError(403, "Unauthorized to perform this action");
   }
 
   const { tag, link } = req.body;
@@ -50,11 +49,11 @@ export const addPortfolioHandler = asyncHandler(async (req, res) => {
 });
 
 export const deletePortfolioHandler = asyncHandler(async (req, res) => {
-   const user = await User.findById(req.user._id);
+  const user = await User.findById(req.user._id);
 
-   if (user.role.toLowerCase() !== "admin") {
-     throw new ApiError(403, "Unauthorized to perform this action");
-   }
+  if (user.role.toLowerCase() !== "admin") {
+    throw new ApiError(403, "Unauthorized to perform this action");
+  }
   const { _id } = req.body;
 
   if (!_id) {
@@ -72,4 +71,47 @@ export const deletePortfolioHandler = asyncHandler(async (req, res) => {
         "Portfolio deleted successfully"
       )
     );
+});
+
+const updatePortfolioHandler = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user.role.toLowerCase() !== "admin") {
+    throw new ApiError(403, "Unauthorized to perform this action");
+  }
+
+  const { tag, link } = req.body;
+
+  const imageFileLocalPath = req.file?.path;
+
+  if (!(link && (tag || imageFileLocalPath))) {
+    throw new ApiError(
+      400,
+      "Portfolio link and atleast one field is required!"
+    );
+  }
+
+  let portfolioImageFile;
+  if (imageFileLocalPath) {
+    if (!req.file.mimetype.startsWith("image/")) {
+      fs.unlinkSync(localFilePath);
+      throw new ApiError(400, "Only image file is allowed");
+    } else {
+      portfolioImageFile = await uploadToCloudinary(imageFileLocalPath);
+    }
+  }
+
+  const portfolioToUpdate = await Portfolio.findOneAndUpdate(
+    { link },
+    {
+      $set: { link, tag, image: portfolioImageFile.secure_url },
+    },
+    {
+      new: true,
+    }
+  );
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, portfolioToUpdate, "Updated successfully"));
 });
