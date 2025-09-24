@@ -7,6 +7,16 @@ import { uploadToCloudinary } from "../utils/cloudinaryConfig.util.js";
 import fs from "fs";
 import { User } from "../models/user.model.js";
 
+// get portfolios
+export const getPortfolioHandler = asyncHandler(async (req, res) => {
+  const porfolios = await Portfolio.find();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, porfolios, "Portolio fetched successfully"));
+});
+
+// add portfolio
 export const addPortfolioHandler = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
@@ -14,9 +24,11 @@ export const addPortfolioHandler = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Unauthorized to perform this action");
   }
 
-  const { tag, link } = req.body;
+  const { title, description, tag, link } = req.body;
 
-  if ([tag, link].some((fields) => fields.trim() === "")) {
+  console.log("body data : ", req.body);
+
+  if ([title, description, tag, link].some((fields) => fields === "")) {
     throw new ApiError(400, "All fields are required");
   }
 
@@ -32,28 +44,43 @@ export const addPortfolioHandler = asyncHandler(async (req, res) => {
   }
 
   const portfolioImageFile = await uploadToCloudinary(localFilePath);
-  console.log(portfolioImageFile);
+
   if (!portfolioImageFile) {
     throw new ApiError(400, "Portfolio image file is required");
   }
 
+  console.log("profile image is here");
+
   const portfolio = await Portfolio.create({
+    title,
+    description,
     tag,
     link,
     image: portfolioImageFile.secure_url,
   });
+
+  console.log("portfolio data", portfolio);
 
   return res
     .status(200)
     .json(new ApiResponse(200, portfolio, "Uploaded succussfully"));
 });
 
+// delete portfolio
 export const deletePortfolioHandler = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
   if (user.role.toLowerCase() !== "admin") {
     throw new ApiError(403, "Unauthorized to perform this action");
   }
+  // const { _id } = req.body;
+
+  // if (!_id) {
+  //   throw new ApiError(400, "Portfolio title is required");
+  // }
+
+  // const portfolioToBeDeleted = await Portfolio.findByIdAndDelete({ title });
+  // --------------------------------------------
   const { _id } = req.body;
 
   if (!_id) {
@@ -73,6 +100,7 @@ export const deletePortfolioHandler = asyncHandler(async (req, res) => {
     );
 });
 
+// update portfolio
 const updatePortfolioHandler = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
